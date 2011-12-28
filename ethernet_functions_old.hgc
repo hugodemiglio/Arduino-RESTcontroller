@@ -1,0 +1,204 @@
+uint16_t http200ok(void){
+  return(es.ES_fill_tcp_data_p(buf,0,PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nPragma: no-cache\r\n\r\n")));
+}
+
+uint16_t http404(void){
+  return(es.ES_fill_tcp_data_p(buf,0,PSTR("HTTP/1.0 404 OK\r\nContent-Type: text/html\r\n\r\n")));
+}
+
+uint16_t print_webpage(uint8_t *buf){
+  uint16_t plen;
+  plen=http200ok();
+  plen=es.ES_fill_tcp_data_p(buf,plen,PSTR("{\"drawer_status\":\""));
+  //plen=es.ES_fill_tcp_data_p(buf,plen,PSTR(drawerStatus));
+  plen=es.ES_fill_tcp_data_p(buf,plen,PSTR("\",\"ambient_light\":\"false\"}"));
+  return(plen);
+}
+
+uint16_t print_404(uint8_t *buf){
+  uint16_t plen;
+  plen=http404();
+  plen=es.ES_fill_tcp_data_p(buf,plen,PSTR("<h1>Not found</h1>"));
+  return(plen);
+}
+
+#define CMDBUF 50
+
+int16_t process_request(char *str){
+  int8_t r=-1;
+  int8_t i = 0;
+  char clientline[CMDBUF];
+  int index = 0;
+  int plen = 0;
+  
+#ifdef DEBUG
+  Serial.println( str );
+#endif
+
+  char ch = str[index];
+  
+  while( ch != ' ' && index < CMDBUF) {
+    clientline[index] = ch;
+    index++;
+    ch = str[index];
+  }
+  clientline[index] = '\0';
+
+#ifdef DEBUG
+  Serial.println( clientline );
+#endif
+
+  // convert clientline into a proper
+  // string for further processing
+  String urlString = String(clientline);
+
+  // extract the operation
+  String op = urlString.substring(0,urlString.indexOf(' '));
+
+  // we're only interested in the first part...
+  urlString = urlString.substring(urlString.indexOf('/'), urlString.indexOf(' ', urlString.indexOf('/')));
+
+  // put what's left of the URL back in client line
+  urlString.toCharArray(clientline, CMDBUF);
+
+  // get the first two parameters
+  char *pin = strtok(clientline,"/");
+  char *value = strtok(NULL,"/");
+
+  // this is where we actually *do something*!
+  char outValue[10] = "MU";
+  //outValue = "MU";
+//  String jsonOut = String();
+  char jsonOut[50];
+
+  if(pin != NULL){
+    if(value != NULL){
+
+      // set the pin value
+#ifdef DEBUG
+      Serial.println("setting pin");
+#endif
+            
+      // select the pin
+      int selectedPin = pin[0] -'0';
+#ifdef DEBUG
+      Serial.println(selectedPin);
+#endif
+            
+      // set the pin for output
+      pinMode(selectedPin, OUTPUT);
+            
+      // determine digital or analog (PWM)
+      if(strncmp(value, "HIGH", 4) == 0 || strncmp(value, "LOW", 3) == 0){
+              
+        // digital
+#ifdef DEBUG
+        Serial.println("digital");
+#endif
+              
+        if(strncmp(value, "HIGH", 4) == 0){
+#ifdef DEBUG
+          Serial.println("HIGH");
+#endif
+          digitalWrite(selectedPin, HIGH);
+        }
+              
+        if(strncmp(value, "LOW", 3) == 0){
+#ifdef DEBUG
+          Serial.println("LOW");
+#endif
+          digitalWrite(selectedPin, LOW);
+        }
+              
+      } else {
+              
+        // analog
+#ifdef DEBUG
+        Serial.println("analog");
+#endif
+              
+        // get numeric value
+        int selectedValue = atoi(value);
+#ifdef DEBUG
+        Serial.println(selectedValue);
+#endif
+              
+        analogWrite(selectedPin, selectedValue);
+              
+      }
+      // return status
+      return( http200ok() );
+        
+    } else {
+
+      // read the pin value
+#ifdef DEBUG
+      Serial.println("reading pin");
+#endif
+
+      // determine analog or digital
+      if(pin[0] == 'a' || pin[0] == 'A'){
+
+        // analog
+        int selectedPin = pin[1] - '0';
+
+#ifdef DEBUG
+        Serial.println(selectedPin);
+        Serial.println("analog");
+#endif
+
+        sprintf(outValue,"%d",analogRead(selectedPin));
+              
+#ifdef DEBUG
+        Serial.println(outValue);
+#endif
+
+      } else if(pin[0] != NULL) {
+
+        // digital
+        int selectedPin = pin[0] - '0';
+
+#ifdef DEBUG
+        Serial.println(selectedPin);
+        Serial.println("digital");
+#endif
+
+        pinMode(selectedPin, INPUT);
+              
+        int inValue = digitalRead(selectedPin);
+              
+        if(inValue == 0){
+          sprintf(outValue,"%s","LOW");
+          //sprintf(outValue,"%d",digitalRead(selectedPin));
+        }
+              
+        if(inValue == 1){
+          sprintf(outValue,"%s","HIGH");
+        }
+              
+#ifdef DEBUG
+        Serial.println(outValue);
+#endif
+      }
+
+      // assemble the json output
+      sprintf( jsonOut, "{\"%s\":\"%s\"}", pin, outValue );
+#ifdef DEBUG
+      Serial.println( jsonOut );
+#endif
+      // return value
+      plen=http200ok();
+      plen=es.ES_fill_tcp_data(buf,plen,jsonOut);
+      return(plen);
+    }
+  } else {
+          
+    // error
+#ifdef DEBUG
+    Serial.println("erroring");
+#endif
+    plen = http404();
+  }
+ 
+  return plen;
+}

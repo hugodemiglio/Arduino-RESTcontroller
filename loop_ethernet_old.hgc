@@ -1,0 +1,42 @@
+void loop_ethernet(){
+  uint16_t plen, dat_p;
+  int8_t cmd;
+  
+  // read packet, handle ping and wait for a tcp packet:
+  dat_p=es.ES_packetloop_icmp_tcp(buf,es.ES_enc28j60PacketReceive(BUFFER_SIZE, buf));
+
+  /* dat_p will be unequal to zero if there is a valid http get */
+  if(dat_p==0){
+    // no http request
+    //continue;
+  } else {
+    // tcp port 80 begin
+    if (strncmp("GET ",(char *)&(buf[dat_p]),4)!=0){
+      // head, post and other methods:
+      dat_p = print_webpage(buf);
+      goto SENDTCP;
+    }
+
+    // just one web page in the "root directory" of the web server
+    if (strncmp("/ ",(char *)&(buf[dat_p+4]),2)==0){
+#ifdef DEBUG
+      Serial.println("GET / request");
+#endif
+      dat_p=print_webpage(buf);
+      goto SENDTCP;
+    }/* else if(strncmp("/effect/1 ",(char *)&(buf[dat_p+4]),2)==0){
+#ifdef DEBUG
+      Serial.println("GET /effect/1 request");
+#endif
+      drawer_leds_effect(1);
+      dat_p=print_webpage(buf);
+      goto SENDTCP;
+    }*/
+    dat_p = process_request((char *)&(buf[dat_p+4]));
+  
+SENDTCP:
+
+    es.ES_www_server_reply(buf,dat_p); // send web page data
+    // tcp port 80 end
+  }
+}

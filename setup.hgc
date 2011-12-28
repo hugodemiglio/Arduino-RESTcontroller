@@ -1,0 +1,49 @@
+void setup(){
+  pinMode(53, OUTPUT);
+  digitalWrite(53, HIGH);
+  
+  down_leds_on();
+  drawer_leds_on();
+  lcd_leds_on();
+  lcd.begin(16, 2);
+  
+  lcd_print("HG HTTP Control", "Reading... 0.0.1");
+  
+  /*lcd.print("HG HTTP Control");
+  lcd.setCursor(0, 1);
+  lcd.print("Reading... 0.0.1");*/
+  
+  // Init SPI
+   es.ES_enc28j60SpiInit();
+  
+  // initialize enc28j60
+  es.ES_enc28j60Init(mymac);  //, 8);
+
+  //init the ethernet/ip layer:
+  es.ES_init_ip_arp_udp_tcp(mymac,myip,80);
+  
+  Serial.begin(9600);
+  
+#ifdef DEBUG
+  Serial.println("ENC28J60 RESTduino");
+
+  Serial.print( "ENC28J60 version " );
+  Serial.println( es.ES_enc28j60Revision(), HEX);
+  if( es.ES_enc28j60Revision() <= 0 ) 
+    Serial.println( "Failed to access ENC28J60");
+#endif
+
+#ifdef DEBUG
+  Serial.println("Ready");
+#endif
+  
+  lcd_print("HG HTTP Control", "Ready.");
+  
+  /*cd.setCursor(0, 1);
+  lcd.print("Ready.");*/
+  delay(1000);
+  down_leds_off();
+  drawer_leds_off();
+  lcd_clear();
+
+}

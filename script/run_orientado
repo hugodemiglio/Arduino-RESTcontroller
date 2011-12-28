@@ -1,0 +1,39 @@
+<?php
+
+class Arduino{
+  var $path = '';
+  var $config_file = '_config.php';
+   
+  function boot(){
+    //Mensagem de boas vindas
+    $dados = "/* Arquivo gerado pelo Hugo Arduino Organizator (php) */\n";
+
+    if(file_exists($path.$config_file)){
+      include $this->path.$config_file;
+    } else {
+      $dados .= "/* Erro: Não foi encontrado o arquivo de configuração (".$path.$config_file.") */\n";
+    }
+  }
+  
+  function compact(){
+    if(isset($ordem) and is_array($ordem)){
+      foreach($ordem as $arquivo){
+        if(file_exists($path.$arquivo)){
+          $dados .= file_get_contents($path.$arquivo)."\n";
+        } else {
+          $dados .= "/* Noticia: Não foi encontrado o arquivo: (".$path.$config_file.") */\n";
+        }
+      }
+    }
+  }
+  
+  function save(){
+    if(!isset($arquivo_saida)) $arquivo_saida = 'sem_titulo.pde';
+    $fp = fopen($path.$arquivo_saida,'w');
+    fwrite ($fp, $dados);
+    fclose ($fp);
+  }
+  
+}
+
+?>

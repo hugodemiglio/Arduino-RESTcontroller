@@ -1,0 +1,26 @@
+/* Keyboard */
+int key = 0;
+int lastKey = 0;
+int keyboardPin = A0;
+int drawerStatus = 0;
+
+/* Leds */
+const int led1 = 6, led2 = 5, led3 = 4, downLed = 7, lcdLed = 3;
+const int ledPower = 50, downLedPower = 100, lcdLedPower = 100;
+int ledStatus = 0, downLedStatus = 0;
+
+/* Motor */
+const int stepsPerRevolution = 200;
+int steps = 1000;
+Stepper myStepper(stepsPerRevolution, 8,9,10,11);
+
+/* Sensor of light */
+const int lightSensor = A1;
+int light = 0;
+
+/* System */
+int randomic = 0;
+int serialRead = 0;
+
+  LiquidCrystal lcd(48, 8, 9, 49, 10, 46);
+//LiquidCrystal lcd(12, 11, 5, 4, 3, 2);

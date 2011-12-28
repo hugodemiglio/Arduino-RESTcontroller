@@ -1,0 +1,35 @@
+bool loop_ethernet(){
+  uint16_t plen, dat_p;
+  int8_t cmd;
+  
+  // read packet, handle ping and wait for a tcp packet:
+  dat_p=es.ES_packetloop_icmp_tcp(buf,es.ES_enc28j60PacketReceive(BUFFER_SIZE, buf));
+
+  /* dat_p will be unequal to zero if there is a valid http get */
+  if(dat_p==0){
+    //last_command_received = 0;
+    return false;
+  } else {
+    // tcp port 80 begin
+    if (strncmp("GET ",(char *)&(buf[dat_p]),4)!=0){
+      // head, post and other methods:
+      dat_p = print_webpage(buf);
+      es.ES_www_server_reply(buf,dat_p);
+    }
+
+    // just one web page in the "root directory" of the web server
+    else if (strncmp("/ ",(char *)&(buf[dat_p+4]),2)==0){
+      dat_p=print_webpage(buf);
+      es.ES_www_server_reply(buf,dat_p);
+      lcd_print("GET /", (char *)&(buf[dat_p+4]));
+    }
+    
+    // process REST request
+    else {
+      process_request((char *)&(buf[dat_p+4]), dat_p);
+    }
+    
+    // tcp port 80 end
+    return true;
+  }
+}

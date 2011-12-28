@@ -1,0 +1,11 @@
+static uint8_t mymac[6] = { 0x54,0x55,0x58,0x10,0x20,0x35}; 
+static uint8_t myip[4] = { 192,168,0,115};
+
+#define MYWWWPORT 80   
+
+#define BUFFER_SIZE 800
+static uint8_t buf[BUFFER_SIZE+1];
+#define STR_BUFFER_SIZE 22
+static char strbuf[STR_BUFFER_SIZE+1];
+
+EtherShield es=EtherShield();

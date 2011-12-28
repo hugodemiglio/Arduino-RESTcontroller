@@ -1,0 +1,89 @@
+void loop_keyboard(){
+  key = keyboard(keyboardPin);
+  /*if (key != lastKey) {
+    if (key == 1) {
+      digitar(1);
+    }
+  }
+  
+  if (key != lastKey) {
+    if (key == 2) {
+      digitar(2);
+    }
+  }*/
+  
+  if (key != lastKey) {
+    if (key == 5 && drawerStatus != 2) {
+      close();
+    }
+  }
+  
+  if (key != lastKey) {
+    if (key == 6 && drawerStatus != 1) {
+      open();
+    }
+  }
+  
+  lastKey = key;
+}
+
+int keyboard(int keyboardPin){
+ int value;
+ value = analogRead(keyboardPin);
+ if(value > 900 && value < 999){
+   return 1;
+ } else if(value > 870 && value < 899){
+   return 2;
+ } else if(value > 400 && value < 499){
+   return 3;
+ } else if(value > 800 && value < 860){
+   return 4;
+ } else if(value > 700 && value < 799){
+   return 5;
+ } else if(value > 600 && value < 699){
+   return 6;
+ } else {
+   return 0;
+ }
+}
+
+void debug(char *message){
+#ifdef DEBUG
+  Serial.println(message);
+#endif
+}
+
+void lcd_print(char *line1, char *line2){
+  lcd.clear();
+  lcd_leds_on();
+  lcd.setCursor(0, 0);
+  lcd.print(line1);
+  lcd.setCursor(0, 1);
+  lcd.print(line2);
+}
+
+void lcd_clear(){
+  lcd.clear();
+  lcd_leds_off();
+}
+
+void get_light(int light, int drawerStatus){
+ if(light < 200 && drawerStatus != 2){
+   if(ledStatus == 0){
+#ifdef DEBUG
+     Serial.println("Sensor: Ambiente escuro detectado.");
+#endif
+     down_leds_on();
+     drawer_leds_on();
+   }
+ } else {
+   if(ledStatus == 1){
+#ifdef DEBUG
+     Serial.println("Sensor: Ambiente claro detectado.");
+#endif
+     down_leds_off();
+     drawer_leds_off();
+   }
+ }
+ delay(100);
+}

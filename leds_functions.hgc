@@ -1,0 +1,137 @@
+void drawer_leds_on(){
+#ifdef DEBUG
+  Serial.println("Acendendo as luzes.");
+#endif
+  ledStatus = 1;
+  fadeIn(0, ledPower, led1, 1);
+  fadeIn(0, ledPower, led2, 1);
+  fadeIn(0, ledPower, led3, 1);
+#ifdef DEBUG
+  Serial.println("Luzes acessas!");
+#endif
+}
+
+void drawer_leds_off(){
+#ifdef DEBUG
+  Serial.println("Apagando as luzes.");
+#endif
+  ledStatus = 0;
+  fadeOut(ledPower, 0, led1, 1);
+  fadeOut(ledPower, 0, led2, 1);
+  fadeOut(ledPower, 0, led3, 1);
+#ifdef DEBUG
+  Serial.println("Luzes apagadas!");
+#endif
+}
+
+void down_leds_on(){
+  downLedStatus = 1;
+  fadeIn(0, downLedPower, downLed, 1);
+}
+
+void down_leds_off(){
+  downLedStatus = 0;
+  fadeIn(downLedPower, 0, downLed, 1);
+}
+
+void lcd_leds_on(){
+  fadeIn(0, lcdLedPower, lcdLed, 1);
+}
+
+void lcd_leds_off(){
+  fadeIn(lcdLedPower, 0, lcdLed, 1);
+}
+
+void drawer_leds_effect(int effect){
+#ifdef DEBUG
+  Serial.println("Efeito de luzes solicitado.");
+  Serial.println("Efeito em execucao...");
+#endif
+  int i;
+  int j;
+  int z = 0;
+  int delay_time = 1;
+  switch(effect){
+    case 1:
+      for(i = 0;i < 5;i++){
+        drawer_leds_on();
+        drawer_leds_off();
+      }
+      break;
+    case 2:
+      for(i = 0;i < 5;i++){
+        fadeIn(0, 100, led1, delay_time);
+        for(j = 100;j >= 0;j--){
+          analogWrite(led1, j);
+          if(j <= 50){
+            analogWrite(led2, z);
+            z++;
+          }
+          delay(delay_time);
+        }
+        fadeIn(50, 100, led2, delay_time);
+        z = 0;
+        for(j = 100;j >= 0;j--){
+          analogWrite(led2, j);
+          if(j <= 50){
+            analogWrite(led3, z);
+            z++;
+          }
+          delay(delay_time);
+        }
+        fadeIn(50, 100, led3, delay_time);
+        fadeOut(100, 0, led3, delay_time);
+      }
+      break;
+    case 3:
+      for(i = 0;i < 50;i++){
+        analogWrite(led1, 100);
+        delay(delay_time * 20);
+        analogWrite(led1, 0);
+        analogWrite(led2, 100);
+        delay(delay_time * 20);
+        analogWrite(led2, 0);
+        analogWrite(led3, 100);
+        delay(delay_time * 20);
+        analogWrite(led3, 0);
+      }
+      break;
+    case 4:
+      for(j = 0; j < 1;j++){
+        for(int i = 1;i <= 100;i++){
+          analogWrite(led1, i);
+          analogWrite(led2, i);
+          analogWrite(led3, i);
+          delay(15);
+        }
+        delay(100);
+        for(int i = 100;i >= 1;i--){
+          analogWrite(led1, i);
+          analogWrite(led2, i);
+          analogWrite(led3, i);
+          delay(15);
+        }
+        delay(100);
+      }
+      break;
+  }
+#ifdef DEBUG
+  Serial.println("Efeito concluido com sucesso!");
+#endif
+}
+
+void fadeOut(int start, int end, int port, int delay_time){
+ for(int i = start;i > 0;i--){
+  analogWrite(port, i);
+  delay(delay_time);
+ }
+ analogWrite(port, end);
+}
+
+void fadeIn(int start, int end, int port, int delay_time){
+ for(int i = start;i < end;i++){
+  analogWrite(port, i);
+  delay(delay_time);
+ }
+ analogWrite(port, end);
+}

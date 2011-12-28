@@ -1,0 +1,45 @@
+void open(){
+#ifdef DEBUG
+  Serial.println(" ====== Pedido recebido ====== ");
+  Serial.println("Pedido para abrir a gaveta recebido.");
+  Serial.println("Abrindo a gaveta...");
+#endif
+  drawer_leds_on();
+  myStepper.step(-steps);
+  stopMotor();
+  drawerStatus = 1;
+  drawer_leds_off();
+#ifdef DEBUG
+  Serial.println("Gaveta aberta com sucesso!");
+  Serial.println(" ====== Pedido concluido ====== ");
+#endif
+}
+
+void close(){
+#ifdef DEBUG
+  Serial.println(" ====== Pedido recebido ====== ");
+  Serial.println("Pedido para fechar a gaveta recebido.");
+  Serial.println("Fechando a gaveta...");
+#endif
+  randomic = random(1, 4);
+  drawer_leds_on();
+  myStepper.step(steps);
+  stopMotor();
+  drawerStatus = 2;
+  drawer_leds_off();
+  drawer_leds_effect(randomic);
+#ifdef DEBUG
+  Serial.println("Gaveta fechada com sucesso!");
+  Serial.println(" ====== Pedido concluido ====== ");
+#endif
+}
+
+void stopMotor(){
+#ifdef DEBUG
+  Serial.println("Desligando motor principal.");
+#endif
+  digitalWrite(8, LOW);
+  digitalWrite(9, LOW);
+  digitalWrite(10, LOW);
+  digitalWrite(11, LOW);
+}

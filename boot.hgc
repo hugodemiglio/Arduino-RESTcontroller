@@ -1,0 +1,5 @@
+#define DEBUG 1
+
+#include "EtherShield.h"
+#include <Stepper.h>
+#include <LiquidCrystal.h>
